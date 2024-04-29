@@ -10,9 +10,10 @@ public class Main  {
     public static void main(String[] args) {
         FlinkApplication
                 .builder()
-                .addSource(new BeanWithKey<InjectSource<String>>("",TestSource::new))
-                .addSource("key", TestSource::new)
+                .addSource("test",context -> context.env().fromElements(1))
+//                .addSource("key", TestSource::new)
                 .addSink("sink",new DiscardingSink<String>())
+                .addSink("",()->new DiscardingSink<>())
                 .build()
                 .run(new TestJobFactory(),args);
     }

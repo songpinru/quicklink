@@ -10,7 +10,8 @@ public class TestJobFactory implements JobFactory<TestApplication> {
     @Override
     public TestApplication create(ContainerContext context) {
         TestApplication testApplication = new TestApplication();
-        testApplication.source= context.getSource("");
+        System.out.println(context.getSource("test"));
+        testApplication.source= context.getSource("test");
         testApplication.sink=new DiscardingSink<>();
         return testApplication;
     }

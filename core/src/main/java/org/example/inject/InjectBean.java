@@ -1,5 +1,7 @@
 package org.example.inject;
 
+import org.example.base.ContainerContext;
+
 public interface InjectBean<T> {
-    T inject();
+    T inject(ContainerContext context);
 }

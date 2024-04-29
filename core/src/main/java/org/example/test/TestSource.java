@@ -13,6 +13,6 @@ public class TestSource extends SourceBase<String> {
 
     @Override
     public DataStream<String> createStream() {
-        return context.env.fromElements("1");
+        return context.env().fromElements("1");
     }
 }
