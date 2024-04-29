@@ -85,10 +85,10 @@ public final class FlinkApplication {
         HashMap<String, Object> beanMap = new HashMap<>();
 //        ContainerContext context = new ContainerContext(sourceMap,  beanMap);
         EnvContext context = new EnvContext(beanMap, env);
-//        sources.forEach(s -> {
-//            BeanWithKey<? extends Source<?>> source = s.inject(context);
-//            beanMap.put(source.getKey(), source.getBean());
-//        });
+        sources.forEach(s -> {
+            BeanWithKey<? extends DataStream<?>> source = s.inject(context);
+            beanMap.put(source.getKey(),(Source)()-> source.getBean());
+        });
 
         beans.forEach(b -> {
             BeanWithKey<?> bean = b.inject(context);
@@ -124,12 +124,13 @@ public final class FlinkApplication {
 
 
         private <T> ApplicationBuilder addSource(InjectSourceWithKey<T> injectSourceWithKey) {
-            beans.add(injectSourceWithKey);
+            sources.add(injectSourceWithKey);
             return this;
         }
 
         public <T> ApplicationBuilder addSource(String key, InjectSource<T> injectSource) {
             InjectSourceWithKey<T> injectSourceWithKey = context -> new BeanWithKey<>(key,injectSource.inject(context));
+
             return addSource(injectSourceWithKey);
 
         }
