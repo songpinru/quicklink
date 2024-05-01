@@ -1,16 +1,14 @@
 package org.example.base;
 
-import org.apache.flink.streaming.api.functions.sink.SinkFunction;
-
 import java.util.Map;
+
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 
 public class ContainerContext {
 
-//    private final Map<String, Source<?>> sourceMap;
     private final Map<String, ?> beanMap;
 
-    public ContainerContext( Map<String, ?> beanMap) {
-//        this.sourceMap = sourceMap;
+    public ContainerContext(Map<String, ?> beanMap) {
         this.beanMap = beanMap;
     }
 

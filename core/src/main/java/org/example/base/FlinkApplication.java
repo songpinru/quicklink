@@ -1,20 +1,18 @@
 package org.example.base;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Supplier;
+
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.example.config.ConfigurationUtil;
 import org.example.inject.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.function.Supplier;
 
 
 public final class FlinkApplication {
@@ -27,10 +25,14 @@ public final class FlinkApplication {
     private List<InjectWithKey<?>> beans;
 
 
-    public FlinkApplication(List<InjectSourceWithKey<?>> sources, List<InjectWithKey<?>> beans) {
+    public FlinkApplication(List<InjectWithKey<?>> beans) {
         this.sources = sources;
 //        this.sinks = sinks;
         this.beans = beans;
+    }
+
+    public static ApplicationBuilder builder() {
+        return new ApplicationBuilder();
     }
 
     public <T extends FlinkJob> void run(JobFactory<T> primaryService, String... args) {
@@ -39,7 +41,7 @@ public final class FlinkApplication {
             throw new RuntimeException("primaryService must not be null");
         }
 
-        //解析注解
+        // 解析注解
 //        String jobName;
 //        if (primaryService.isAnnotationPresent(JobName.class)) {
 //            JobName jobNameAnnotation = primaryService.getAnnotation(JobName.class);
@@ -53,7 +55,7 @@ public final class FlinkApplication {
 //        logger.info("The job {} starts running.", jobName);
 
 
-        //环境准备
+        // 环境准备
         ParameterTool fromArgs = ParameterTool.fromArgs(args);
         logger.info("Handle args: {}", fromArgs.getConfiguration());
         logger.debug("Starts loading the configuration file.");
@@ -78,17 +80,17 @@ public final class FlinkApplication {
 //            throw new RuntimeException("access constructor failed", e);
 //        }
 
-        //执行流程
+        // 执行流程
 //        logger.debug("The task {} is ready to run.", jobName);
 
 //        HashMap<String, Source<?>> sourceMap = new HashMap<>();
         HashMap<String, Object> beanMap = new HashMap<>();
 //        ContainerContext context = new ContainerContext(sourceMap,  beanMap);
         EnvContext context = new EnvContext(beanMap, env);
-        sources.forEach(s -> {
-            BeanWithKey<? extends DataStream<?>> source = s.inject(context);
-            beanMap.put(source.getKey(),(Source)()-> source.getBean());
-        });
+//        sources.forEach(s -> {
+//            BeanWithKey<? extends DataStream<?>> source = s.inject(context);
+//            beanMap.put(source.getKey(),(Source)()-> source.getBean());
+//        });
 
         beans.forEach(b -> {
             BeanWithKey<?> bean = b.inject(context);
@@ -115,28 +117,34 @@ public final class FlinkApplication {
     }
 
     public static class ApplicationBuilder {
-        private ApplicationBuilder() {
-        }
-
-        private List<InjectSourceWithKey<?>> sources = new ArrayList<>();
+        //        private List<InjectSourceWithKey<?>> sources = new ArrayList<>();
         //        private List<InjectSinkWithKey<?>> sinks = new ArrayList<>();
         private List<InjectWithKey<?>> beans = new ArrayList<>();
 
+        private ApplicationBuilder() {
+        }
 
         private <T> ApplicationBuilder addSource(InjectSourceWithKey<T> injectSourceWithKey) {
-            sources.add(injectSourceWithKey);
+            beans.add(injectSourceWithKey);
             return this;
         }
 
         public <T> ApplicationBuilder addSource(String key, InjectSource<T> injectSource) {
-            InjectSourceWithKey<T> injectSourceWithKey = context -> new BeanWithKey<>(key,injectSource.inject(context));
-
+            InjectSourceWithKey<T> injectSourceWithKey = context -> new BeanWithKey<>(key, injectSource.inject(context));
             return addSource(injectSourceWithKey);
 
         }
+
         public <T> ApplicationBuilder addSource(String key, Source<T> source) {
-            return addSource(key, context -> source.createStream());
+            InjectSource<T> injectSource = context -> source;
+            return addSource(key, injectSource);
         }
+
+        public <T> ApplicationBuilder addSource(String key, InjectDataStream<T> stream) {
+            InjectSource<T> injectSource = context -> (Source<T>) () -> stream.inject(context);
+            return addSource(key, injectSource);
+        }
+
 
 //        public <T> ApplicationBuilder addSource(String key, Class<? extends SourceBase<T>> clazz) {
 //            InjectSourceWithKey<T> injectSourceWithKey = context -> {
@@ -165,19 +173,23 @@ public final class FlinkApplication {
             return this;
         }
 
-        public <T> ApplicationBuilder addSink(String key, InjectSink<T> sink) {
+        private <T> ApplicationBuilder addSink(String key, InjectSink<T> sink) {
             InjectSinkWithKey<T> injectSinkWithKey = context -> new BeanWithKey<>(key, sink.inject(context));
             return addSink(injectSinkWithKey);
         }
 
+        public <T> ApplicationBuilder addSink(String key, InjectSinkFunction<T> sink) {
+            InjectSink<T> injectSink = context -> new SinkFunctionProxy<>(sink.inject(context));
+            return addSink(key, injectSink);
+        }
+
         public <T> ApplicationBuilder addSink(String key, SinkFunction<T> sinkFunction) {
-            InjectSinkWithKey<T> injectSinkWithKey = context -> new BeanWithKey<>(key, sinkFunction);
-            return addSink(injectSinkWithKey);
+            InjectSinkFunction<T> injectSinkFunction = context -> sinkFunction;
+            return addSink(key, injectSinkFunction);
         }
 
         public <T> ApplicationBuilder addSink(String key, Supplier<SinkFunction<T>> sink) {
-            InjectSinkWithKey<T> injectSinkWithKey = context -> new BeanWithKey<>(key, sink.get());
-            return addSink(injectSinkWithKey);
+            return addSink(key, sink.get());
         }
 
 
@@ -192,19 +204,18 @@ public final class FlinkApplication {
         }
 
         public <T> ApplicationBuilder addBean(String key, T bean) {
-            InjectWithKey<T> injectBeanWithKey = context -> new BeanWithKey<>(key, bean);
-            return addBean(injectBeanWithKey);
+            InjectBean<T> injectBean = context -> bean;
+            return addBean(key, injectBean);
+        }
+
+        public <T> ApplicationBuilder addBean(String key, Supplier<T> bean) {
+            return addBean(key, bean.get());
         }
 
         public FlinkApplication build() {
-            return new FlinkApplication(sources, beans);
+            return new FlinkApplication(beans);
         }
 
 
-
-    }
-
-    public static ApplicationBuilder builder() {
-        return new ApplicationBuilder();
     }
 }

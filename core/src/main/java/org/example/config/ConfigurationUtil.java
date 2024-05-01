@@ -1,19 +1,17 @@
 package org.example.config;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 public class ConfigurationUtil {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtil.class);
-
-
     static final String CONFIGURATION_FILE = "application-%s.properties";
     static final String ACTIVE_PROFILE = "profiles.active";
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtil.class);
 
     public static ParameterTool loadConfigurations(ParameterTool fromArgs) {
         String activeProfile;

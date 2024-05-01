@@ -9,6 +9,10 @@ public class BeanWithKey<T> {
         this.bean = bean;
     }
 
+    public static <I> BeanWithKey<I> from(String key, I bean) {
+        return new BeanWithKey<>(key, bean);
+    }
+
     public String getKey() {
         return key;
     }
@@ -16,8 +20,7 @@ public class BeanWithKey<T> {
     public T getBean() {
         return bean;
     }
-    public static<I> BeanWithKey<I> from(String key, I bean){
-        return new BeanWithKey<>(key, bean);
-    };
+
+    ;
 
 }
