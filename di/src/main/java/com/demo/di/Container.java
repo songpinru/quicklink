@@ -18,4 +18,9 @@ public class Container {
     public <T> void add(Key key, T value) {
         beans.put(key, value);
     }
+
+    @Override
+    public String toString() {
+        return beans.toString();
+    }
 }

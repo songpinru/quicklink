@@ -1,16 +1,16 @@
 package com.demo.di;
 
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.demo.annotation.processor.ConfigurationProvider;
 import com.demo.annotation.processor.ServiceProvider;
 import com.demo.di.api.Bean;
 import com.demo.di.api.Bind;
 import com.demo.di.api.Inject;
 import com.demo.di.api.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * @author pinru
@@ -19,26 +19,32 @@ import com.demo.di.api.Named;
  */
 public class Application {
 
-
-    public Application(String[] args) {
-        final Key<String[]> argsKey = new Key<>(String[].class, ARGS);
-        inject(argsKey, container -> args);
-        edgeRelation(argsKey, List.of());
-    }
-
-    public static Application init(String[] args) {
-        return new Application(args);
-    }
-
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
     public static String ARGS = "args";
 
-    private final List<Class<?>> defaultServices = new ArrayList<>();
-    private final List<Object> defaultConfig = new ArrayList<>();
 
-    private final Map<Key, InjectFunction<?>> injectMap = new HashMap<>();
+    private final List<Class<?>> defaultServices;
+    private final List<Object> defaultConfig;
+    private final GraphContext context;
 
-    private final Map<Key, List<Key>> dependency = new HashMap<>();
-    private final Map<Key, List<Key>> dependOn = new HashMap<>();
+
+    public Application(String[] args) {
+        defaultServices = new ArrayList<>();
+        defaultConfig = new ArrayList<>();
+        context = new GraphContext();
+
+        initArgs(args);
+    }
+
+    private void initArgs(final String[] args) {
+        logger.debug("Application args: {}", Arrays.toString(args));
+        final Key<String[]> argsKey = new Key<>(String[].class, ARGS);
+        context.injectBean(argsKey, container -> args, List.of());
+    }
+    // private final Map<Key, InjectFunction<?>> injectMap = new HashMap<>();
+    // private final Map<Key, List<Key>> dependency = new HashMap<>();
+
+    // private final Map<Key, List<Key>> dependOn = new HashMap<>();
 
     public Application addDefaultService(Class<?> clazz) {
         defaultServices.add(clazz);
@@ -49,74 +55,11 @@ public class Application {
         defaultConfig.add(config);
         return this;
     }
-    public <T> T getInstance(Class<T> clazz,String name){
-        return getInstance(Key.of(clazz,name));
-    }
-    public <T> T getInstance(Class<T> clazz){
-        return getInstance(clazz,"");
-    }
-    private  <T> T getInstance(Key<T> key) {
-        initialize();
-        System.out.println("defaultServices: " + defaultServices);
-        System.out.println("defaultConfig:   " + defaultConfig);
-        System.out.println("dependency:      " + dependency);
-        System.out.println("dependOn:        " + dependOn);
-        final ConcurrentMap<Key, Integer> topologyMap = new ConcurrentHashMap<>();
-        topology(topologyMap, key);
 
-        final Container container = generateContainer(topologyMap);
-        return container.get(key);
-    }
 
-    private Container generateContainer(Map<Key, Integer> topologyMap) {
-        final Container container = new Container();
-        // 把入度为0的项加入容器，并把相关的项的计数-1，直至完成
-        while (!topologyMap.isEmpty()) {
-            System.out.println("topology:       " + topologyMap);
-            topologyMap.forEach((k, c) -> {
-                if (c == 0) {
-                    final InjectFunction<?> injectFunction = injectMap.get(k);
-                    container.add(k, injectFunction.provide(container));
-                    computeTopology(topologyMap, k);
-                    topologyMap.remove(k);
-                }
-            });
-        }
-        return container;
-    }
 
-    private void computeTopology(Map<Key, Integer> topologyMap, Key k) {
-        dependOn
-                .getOrDefault(k, List.of())
-                .forEach(in -> {
-                    topologyMap.computeIfPresent(in, (i, v) -> v - 1);
-                    computeTopology(topologyMap, in);
-                });
-    }
-
-    private int topology(Map<Key, Integer> map, Key key) {
-        final List<Key> dependencies = dependency.get(key);
-        if (dependencies == null) {
-            throw new RuntimeException("依赖不全:" + key);
-        }
-        int count = dependencies.size();
-        for (final Key dependency : dependencies) {
-            count += topology(map, dependency);
-        }
-        map.put(key, count);
-        return count;
-    }
-
-    private int dependencyCount(Key key) {
-        final List<Key> dependencies = dependency.getOrDefault(key, List.of());
-        int count = dependencies.size();
-        for (final Key dependency : dependencies) {
-            count += dependencyCount(dependency);
-        }
-        return count;
-    }
-
-    private void initialize() {
+    public GraphContext initialize() {
+        logger.info("init application.");
         ServiceLoader
                 .load(ServiceProvider.class)
                 .stream()
@@ -133,10 +76,11 @@ public class Application {
                 .forEach(this::injectConfiguration);
         defaultServices.forEach(this::injectDefaultService);
         defaultConfig.forEach(this::injectionDefaultConfiguration);
-
+        return context;
     }
 
     private void injectConfiguration(Class<?> clazz) {
+        logger.debug("inject configuration {}", clazz);
         final Object configuration;
         try {
             configuration = clazz.getConstructor().newInstance();
@@ -148,6 +92,7 @@ public class Application {
     }
 
     private void injectionDefaultConfiguration(Object configuration) {
+        logger.debug("inject default configuration {}", configuration);
         injectionConfiguration(configuration, true);
     }
 
@@ -175,17 +120,20 @@ public class Application {
                         }
 
                     };
-                    inject(key, injectFunction);
-                    edgeRelation(key, paramKeys);
+                    context.injectBean(key, injectFunction, paramKeys);
                 });
     }
 
 
+
+
     private void injectService(Class<?> clazz) {
+        logger.debug("inject service: {}", clazz);
         injectService(clazz, false);
     }
 
     private void injectDefaultService(Class<?> clazz) {
+        logger.debug("inject default service: {}", clazz);
         injectService(clazz, true);
     }
 
@@ -231,12 +179,11 @@ public class Application {
 
         };
 
-        inject(key, injectFunction);
-        edgeRelation(key, paramKeys);
+        context.injectBean(key, injectFunction, paramKeys);
     }
 
     private boolean isKeyExist(Key key, boolean ignore) {
-        if (injectMap.containsKey(key)) {
+        if (context.isKeyExist(key)) {
             if (ignore) {
                 return true;
             } else {
@@ -246,14 +193,7 @@ public class Application {
         return false;
     }
 
-    private void inject(Key key, InjectFunction<?> bean) {
-        injectMap.put(key, bean);
-    }
 
-    private void edgeRelation(Key key, List<Key> paramKeys) {
-        dependency.put(key, paramKeys);
-        paramKeys.forEach(p -> dependOn.computeIfAbsent(p, k -> new ArrayList<>()).add(key));
-    }
 
     private static List<Key> getKeys(Executable executable) {
         final ArrayList<Key> paramsKey = new ArrayList<>();
