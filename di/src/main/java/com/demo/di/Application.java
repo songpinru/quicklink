@@ -27,6 +27,9 @@ public class Application {
     private final List<Object> defaultConfig;
     private final GraphContext context;
 
+    public static Application app(String[] args){
+        return new Application(args);
+    }
 
     public Application(String[] args) {
         defaultServices = new ArrayList<>();
@@ -41,10 +44,6 @@ public class Application {
         final Key<String[]> argsKey = new Key<>(String[].class, ARGS);
         context.injectBean(argsKey, container -> args, List.of());
     }
-    // private final Map<Key, InjectFunction<?>> injectMap = new HashMap<>();
-    // private final Map<Key, List<Key>> dependency = new HashMap<>();
-
-    // private final Map<Key, List<Key>> dependOn = new HashMap<>();
 
     public Application addDefaultService(Class<?> clazz) {
         defaultServices.add(clazz);
@@ -218,13 +217,14 @@ public class Application {
     }
 
     private static Class<?> getBind(Class<?> clazz, Bind annotation) {
+        final Class<?> bind;
         if (clazz.isInterface()) {
-            return bindOrDefault(clazz, annotation);
+            bind=clazz;
         } else {
             final Class<?>[] interfaces = clazz.getInterfaces();
-            final Class<?> bind = interfaces.length == 1 ? interfaces[0] : clazz;
-            return bindOrDefault(bind, annotation);
+             bind = interfaces.length == 1 ? interfaces[0] : clazz;
         }
+        return bindOrDefault(bind, annotation);
     }
 
 

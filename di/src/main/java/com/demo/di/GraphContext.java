@@ -38,20 +38,20 @@ public class GraphContext {
         return injectMap.containsKey(key);
     }
 
-    public ContainerContext entrypoint(Class<?> clazz, String name) {
+    public <T> ContainerContext<T> entrypoint(Class<T> clazz, String name) {
         return entrypoint(Key.of(clazz, name));
     }
 
-    public ContainerContext entrypoint(Class<?> clazz) {
+    public <T> ContainerContext<T> entrypoint(Class<T> clazz) {
         return entrypoint(clazz, "");
     }
 
-    ContainerContext entrypoint(Key<?> key) {
+    <T> ContainerContext<T> entrypoint(Key<T> key) {
         final ConcurrentMap<Key, Integer> topologyMap = new ConcurrentHashMap<>();
         topology(topologyMap, key);
 
         final Container container = generateContainer(topologyMap);
-        return new ContainerContext(container,key);
+        return new ContainerContext<>(container, key);
     }
 
     private Container generateContainer(Map<Key, Integer> topologyMap) {

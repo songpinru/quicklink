@@ -10,7 +10,7 @@ import org.apache.flink.streaming.api.functions.sink.SinkFunction;
  * @version 1.0
  * @date 2024/5/5
  */
-// @Service
+@Service
 public class TestService {
     final Source<Long> source;
     final SinkFunction<String> sinkFunction;
