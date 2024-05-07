@@ -5,6 +5,6 @@ package com.demo.di;
  * @version 1.0
  * @date 2024/5/4
  */
-public interface InjectFunction<T> {
+interface InjectFunction<T> {
     T provide(Container container);
 }

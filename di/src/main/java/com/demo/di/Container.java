@@ -8,8 +8,8 @@ import java.util.Map;
  * @version 1.0
  * @date 2024/5/4
  */
-public class Container {
-    private final Map<Key, Object> beans=new HashMap<>();
+class Container {
+    private final Map<Key, Object> beans = new HashMap<>();
 
     public <T> T get(Key key) {
         return (T) beans.get(key);
