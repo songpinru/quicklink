@@ -8,7 +8,7 @@ import com.prdi.di.processor.DiAnnotationProcess;
 open module com.prdi.di.processor {
     requires java.base;
     requires transitive java.compiler;
-    requires com.prdi.di;
+    requires transitive com.prdi.di;
     exports com.prdi.di.processor;
     provides javax.annotation.processing.Processor with DiAnnotationProcess;
 

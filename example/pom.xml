@@ -25,12 +25,7 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.prdi</groupId>
-            <artifactId>di</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+
         <dependency>
             <groupId>com.prdi</groupId>
             <artifactId>di-processor</artifactId>

@@ -7,6 +7,5 @@ package com.prdi.di.api;
  * @version 1.0
  * @date 2024/5/4
  */
-public interface ConfigurationProvider {
-    Class<?> get();
+public interface ConfigurationProvider extends Provider<Class<?>>{
 }
