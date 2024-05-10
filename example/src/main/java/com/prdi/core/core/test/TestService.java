@@ -1,7 +1,7 @@
 package com.prdi.core.core.test;
 
 import com.prdi.core.core.base.Source;
-import com.prdi.di.annotation.processor.Service;
+import com.prdi.di.processor.Service;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 
 /**

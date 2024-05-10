@@ -1,11 +1,6 @@
 package com.prdi.di;
 
-import com.prdi.di.annotation.processor.ConfigurationProvider;
-import com.prdi.di.annotation.processor.ServiceProvider;
-import com.prdi.di.api.Bean;
-import com.prdi.di.api.Bind;
-import com.prdi.di.api.Inject;
-import com.prdi.di.api.Named;
+import com.prdi.di.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,9 +1,9 @@
 package com.prdi.core.core.test;
 
 import com.prdi.core.core.base.Source;
-import com.prdi.di.annotation.processor.Configuration;
 import com.prdi.di.api.Bean;
 import com.prdi.di.api.Named;
+import com.prdi.di.processor.Configuration;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.connector.source.lib.NumberSequenceSource;
 import org.apache.flink.api.java.utils.ParameterTool;

@@ -1,4 +1,6 @@
-package com.prdi.di.annotation.processor;
+package com.prdi.di.processor;
+
+import com.prdi.di.api.Inject;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -103,6 +105,7 @@ public class DiAnnotationProcess extends AbstractProcessor {
             annotationsMap.get(annotation.getQualifiedName().toString()).add(fullClassName);
 
             try (final Writer writer = processingEnv.getFiler().createSourceFile(fullClassName).openWriter()) {
+                String s = "%s.%sProvider".formatted(Inject.class.getPackageName() ,annotation.getSimpleName() );
                 final String source = """
                         package %s;
                         public class %s implements %s {
@@ -111,7 +114,7 @@ public class DiAnnotationProcess extends AbstractProcessor {
                                 return %s.class;
                             }
                         }
-                        """.formatted(packageName, className, annotation.getQualifiedName() + "Provider", typeElement.getQualifiedName());
+                        """.formatted(packageName, className, s, typeElement.getQualifiedName());
                 writer.write(source);
                 writer.flush();
             } catch (IOException e) {

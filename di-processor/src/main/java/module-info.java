@@ -1,5 +1,4 @@
-import com.prdi.di.annotation.processor.Configuration;
-import com.prdi.di.annotation.processor.Service;
+import com.prdi.di.processor.DiAnnotationProcess;
 
 /**
  * @author pinru
@@ -9,8 +8,8 @@ import com.prdi.di.annotation.processor.Service;
 open module com.prdi.di.processor {
     requires java.base;
     requires transitive java.compiler;
-    exports com.prdi.di.annotation.processor;
-    provides javax.annotation.processing.Processor with com.prdi.di.annotation.processor.DiAnnotationProcess;
-    uses Configuration;
-    uses Service;
+    requires com.prdi.di;
+    exports com.prdi.di.processor;
+    provides javax.annotation.processing.Processor with DiAnnotationProcess;
+
 }

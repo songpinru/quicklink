@@ -1,4 +1,4 @@
-package com.prdi.di.annotation.processor;
+package com.prdi.di.processor;
 
 import java.lang.annotation.*;
 

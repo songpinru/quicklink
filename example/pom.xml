@@ -19,20 +19,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flink.version>1.15.1</flink.version>
-        <scala.binary.version>2.12</scala.binary.version>
+        <flink.version>1.18.1</flink.version>
         <log4j.version>2.17.1</log4j.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <log4j2.version>2.17.2</log4j2.version>
-        <hadoop.version>3.0.0</hadoop.version>
-        <kafka.version>2.2.1</kafka.version>
-        <hbase.version>2.1.10</hbase.version>
-        <!--        <hive.version>2.1.1</hive.version>-->
-        <jedis.version>3.3.0</jedis.version>
-        <elasticSearch.version>6.8.18</elasticSearch.version>
-        <fastjson.version>1.2.17</fastjson.version>
-        <http.version>4.4</http.version>
-        <clickhouse.version>0.1.54</clickhouse.version>
+
     </properties>
 
     <dependencies>
@@ -41,6 +30,11 @@
             <artifactId>di</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.prdi</groupId>
+            <artifactId>di-processor</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Apache Flink dependencies -->
@@ -94,12 +88,7 @@
             <version>${flink.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-gelly</artifactId>
-            <version>${flink.version}</version>
-            <scope>provided</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-state-processor-api</artifactId>
@@ -119,12 +108,7 @@
             <scope>provided</scope>
         </dependency>
         <!-- log组件 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-<!--            <scope>provided</scope>-->
-        </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>org.slf4j</groupId>-->
 <!--            <artifactId>slf4j-log4j12</artifactId>-->
@@ -136,7 +120,7 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.17.1</version>
-<!--            <scope>runtime</scope>-->
+            <scope>runtime</scope>
         </dependency>
 
 
@@ -152,28 +136,27 @@
         </resources>
         <plugins>
 
-            <!-- Java Compiler -->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-compiler-plugin</artifactId>-->
-<!--                <version>3.1</version>-->
-<!--                <configuration>-->
-<!--                    <source>${target.java.version}</source>-->
-<!--                    <target>${target.java.version}</target>-->
-<!--                    <encoding>${project.build.sourceEncoding}</encoding>-->
-<!--                    <showWarnings>true</showWarnings>-->
-<!--                    <showDeprecation>true</showDeprecation>-->
-<!--&lt;!&ndash;                    <annotationProcessors>com.demo.di.DiAnnotationProcess</annotationProcessors>&ndash;&gt;-->
-<!--                </configuration>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>compile</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>compile</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <annotationProcessors>com.prdi.di.processor.DiAnnotationProcess</annotationProcessors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

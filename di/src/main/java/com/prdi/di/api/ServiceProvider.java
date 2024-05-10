@@ -1,4 +1,4 @@
-package com.prdi.di.annotation.processor;
+package com.prdi.di.api;
 
 /**
  * 辅助@Service的接口
